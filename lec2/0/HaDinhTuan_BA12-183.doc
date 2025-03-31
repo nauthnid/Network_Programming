@@ -1,0 +1,69 @@
+#1. Using dig to Look Up the IP Address of www.gnu.org:
+#The dig command allows you to query DNS servers and retrieve information about various DNS records. To find the IP address of www.gnu.org, you can run the following command:
+dig www.gnu.org
+
+; <<>> DiG 9.19.21-1-Debian <<>> www.gnu.org
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 8198
+;; flags: qr rd ra ad; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 0
+
+;; QUESTION SECTION:
+;www.gnu.org.                   IN      A
+
+;; ANSWER SECTION:
+www.gnu.org.            120     IN      A       209.51.188.116
+
+;; Query time: 0 msec
+;; SERVER: 203.113.131.2#53(203.113.131.2) (UDP)
+;; WHEN: Thu May 30 21:03:43 +07 2024
+;; MSG SIZE  rcvd: 45
+
+
+#2. Using host to Look Up the IP Address of www.gnu.org:
+#The host command is another tool for DNS lookups. To find the IP address of www.gnu.org, use the following command:
+host www.gnu.org
+
+www.gnu.org has address 209.51.188.116
+www.gnu.org has IPv6 address 2001:470:142:5::116
+
+#3. Using nslookup to Look Up the IP Address of www.gnu.org:
+#The nslookup command is yet another option. To find the IP address of www.gnu.org, run:
+nslookup www.gnu.org
+
+Server:         203.113.131.2
+Address:        203.113.131.2#53
+
+Non-authoritative answer:
+Name:   www.gnu.org
+Address: 209.51.188.116
+Name:   www.gnu.org
+Address: 2001:470:142:5::116
+
+#4. Using dig with a Specific DNS Server (8.8.4.4):
+#To use a specific DNS server (in this case, Google’s public DNS server at 8.8.4.4), run:
+dig @8.8.4.4 www.gnu.org
+
+; <<>> DiG 9.19.21-1-Debian <<>> @8.8.4.4 www.gnu.org
+; (1 server found)
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 48137
+;; flags: qr rd ra ad; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 0
+
+;; QUESTION SECTION:
+;www.gnu.org.                   IN      A
+
+;; ANSWER SECTION:
+www.gnu.org.            29      IN      A       209.51.188.116
+
+;; Query time: 0 msec
+;; SERVER: 8.8.4.4#53(8.8.4.4) (UDP)
+;; WHEN: Thu May 30 21:05:14 +07 2024
+;; MSG SIZE  rcvd: 45
+
+#5. Silently Looking Up the IP Address Using dig with Less Information:
+#To make dig print out less information (using the +short option), run:
+dig +short www.gnu.org @8.8.4.4
+
+209.51.188.116

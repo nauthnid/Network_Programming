@@ -1,0 +1,161 @@
+1. Summary
+socket() -create an endpoint for communication
+#include <sys/socket.h>
+     int socket(int domain, int type, int protocol);
+
+socket() creates an endpoint for communication and returns a descriptor.
+A -1 is returned if an error occurs, otherwise the return value is a descriptor referencing the socket.
+
+connect() - initiate a connection on a socket
+#include <sys/types.h>
+#include <sys/socket.h>
+
+int connect(int socket, const struct sockaddr *address, socklen_t address_len);
+The parameter socket is a socket.  If it is of type SOCK_DGRAM, this call specifies the peer with which the socket is to be associated; this address is that to which datagrams are to be sent, and the only address from which datagrams are to be received.  If the socket is of type SOCK_STREAM, this call attempts to make a connection to another socket.  The other socket is specified by address, which is an address in the communications space of the socket.
+Upon successful completion, a value of 0 is returned.  Otherwise, a value of -1 is returned and the global integer variable errno is set to indicate the error.
+
+
+bind() - shell built-in commands
+See the built-in command description in the appropriate shell manual page.
+
+listen – listen for connections on a socket
+#include <sys/socket.h>
+
+     int listen(int socket, int backlog);
+Creation of socket-based connections requires several operations.  First, a socket is created with socket(2).  Next, a willingness to accept incoming connections and a queue limit for incoming connections are specified with listen().  Finally, the connections are accepted with accept(2).  The listen() call applies only to sockets of type SOCK_STREAM.
+The listen() function returns the value 0 if successful; otherwise the value -1 is returned and the global variable errno is set to indicate the error.
+
+accept – accept a connection on a socket
+#include <sys/socket.h>
+
+     int accept(int socket, struct sockaddr *restrict address, socklen_t *restrict address_len);
+accept() blocks the caller until a connection is present.  If the socket is marked non-blocking and no pending connections are present on the queue, accept() returns an error as described below.  The accepted socket may not be used to accept more connections.  The original socket socket, remains open.
+The call returns -1 on error and the global variable errno is set to indicate the error.  If it succeeds, it returns a non-negative integer that is a descriptor for the accepted socket.
+
+close – delete a descriptor
+#include <unistd.h>
+     int close(int fildes);
+The close() call deletes a descriptor from the per-process object reference table. If this is the last reference to the underlying object, the object will be deactivated.
+Upon successful completion, a value of 0 is returned.  Otherwise, a value of -1 is returned and the global integer variable errno is set to indicate the error.
+
+signal – simplified software signal facilities
+#include <signal.h>
+     void (* signal(int sig, void (*func)(int));
+     )(int);
+     or in the equivalent but easier to read typedef'd version:
+     typedef void (*sig_t) (int);
+     sig_t
+     signal(int sig, sig_t func);
+This signal() facility is a simplified interface to the more general sigaction(2) facility. Signals allow the manipulation of a process from outside its domain, as well as allowing the process to manipulate itself or copies of itself (children).
+The previous action is returned on a successful call.  Otherwise, SIG_ERR is returned and the global variable errno is set to indicate the error.
+
+sigaction – software signal facilities
+#include <signal.h>
+     struct  sigaction {
+             union __sigaction_u __sigaction_u;  /* signal handler */
+             sigset_t sa_mask;               /* signal mask to apply */
+             int     sa_flags;               /* see signal options below */
+     };
+     union __sigaction_u {
+             void    (*__sa_handler)(int);
+             void    (*__sa_sigaction)(int, siginfo_t *,
+                            void *);
+     };
+     #define sa_handler      __sigaction_u.__sa_handler
+     #define sa_sigaction    __sigaction_u.__sa_sigaction
+
+     int
+     sigaction(int sig, const struct sigaction *restrict act,
+         struct sigaction *restrict oact);
+The sigaction() system call assigns an action for a signal specified by sig.  If act is non-zero, it specifies an action (SIG_DFL, SIG_IGN, or a handler routine) and mask to be used when delivering the specified signal.  If oact is non-zero, the previous handling information for the signal is returned to the user.
+The sigaction() function returns the value 0 if successful; otherwise the value -1 is returned and the global variable errno is set to indicate the error.
+
+wait, waitpid – wait for process termination
+#include <sys/wait.h>
+pid_t wait(int *stat_loc);
+pid_t waitpid(pid_t pid, int *stat_loc, int options);
+The wait() function suspends execution of its calling process until stat_loc information is available for a terminated child process, or a signal is received. On return from a successful wait() call, the stat_loc area contains termination information about the process that exited as defined below.
+The waitpid() call is identical to wait4() with an rusage value of zero.  The older wait3() call is the same as wait4() with a pid value of -1.
+If wait() returns due to a stopped or terminated child process, the process ID of the child is returned to the calling process.  Otherwise, a value of -1 is returned and errno is set to indicate the error.
+waitpid() returns due to a stopped or terminated child process, the process ID of the child is returned to the calling process.  If there are no children not previously awaited, -1 is returned with errno set to [ECHILD]. Otherwise, if WNOHANG is specified and there are no stopped or exited children, 0 is returned.  If an error is detected or a caught signal aborts the call, a value of -1 is returned and errno is set to indicate the error.
+The wait() and waitpid() functions are defined by POSIX
+
+
+2. Compile the TCP Echo application
+a. Command line arguments handling
+- The program begins by checking the number of command line arguments. It ensures that the port number is provided as an argument, failing gracefully with a usage message if not
+
+#include <stdio.h>
+int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        printf("Usage: %s port_number\n", argv[0]);
+        return 0;
+    }
+}
+
+b. Signal handling setup
+- To manage child processes and prevent zombies, a signal handler (sigchld_handler) is defined. This handler uses waitpid to reap terminated child processes when SIGCHLD is received.
+
+#include <sys/wait.h>
+#include <signal.h>
+// Signal handler to reap zombie processes
+void sigchld_handler(int s) {
+    while (waitpid(-1, NULL, WNOHANG) > 0);
+}
+
+- In main function, the signal handler is configured using sigaction:
+
+#include <signal.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+void sigchld_handler(int s);
+int main() {
+    struct sigaction sa;
+
+    // Set up the signal handler to reap zombie processes
+    sa.sa_handler = sigchld_handler; // reap all dead processes
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART;
+    
+    if (sigaction(SIGCHLD, &sa, NULL) == -1) {
+        perror("sigaction");
+        exit(1);
+    }
+}
+
+c. Socket creation and binding
+- The server socket is created, and the address is bound to the socket (bind function. This setup ensures the server listens on any available local address on the specified port.
+
+// 1 socket
+int sock = socket(AF_INET, SOCK_STREAM, 0);
+if (sock < 0) {
+    perror("Could not create socket");
+    return 1;
+}
+
+// 2 bind
+struct sockaddr_in address;
+address.sin_family = AF_INET;
+address.sin_addr.s_addr = INADDR_ANY; // bind to any local address
+address.sin_port = htons(port);
+
+int bind_value = bind(sock, (struct sockaddr *)&address, sizeof(address));
+if (bind_value < 0) {
+    perror("Could not bind");
+    close(sock); // close the socket before returning
+    return 1;
+}
+
+d. Listening for connections
+- The server enters a listening state (listen function, lines 78-86), allowing a backlog of up to 10 pending connections.
+
+// 3 Listen
+int listen_value = listen(sock, 10); // allow a backlog of 10 connections
+if (listen_value < 0) {
+    perror("Could not listen");
+    close(sock); // close the socket before returning
+    return 1;
+}
+
+printf("Server is listening on port %d\n", port);

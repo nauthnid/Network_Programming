@@ -1,0 +1,100 @@
+byte ordering
+	htons()
+	htonl()
+	ntohs()
+	ntohl()
+
+The  htonl()  function converts the unsigned integer hostlong from host byte order to network byte order.
+
+The htons() function converts the unsigned short integer hostshort from host  byte order to network byte order.
+
+The ntohl() function converts the unsigned integer netlong from network byte order to host byte order.
+
+The  ntohs()  function  converts  the unsigned short integer netshort from network byte order to host byte order.
+
+byte manipulation
+	bzero()
+The  bzero() function erases the data in the n bytes of the memory starting at the location pointed to by s, by writing zeros (bytes containing '\0') to that area.
+
+	bcopy()
+The bcopy() function copies n bytes from src to dest.  The result is correct, even when both areas overlap.
+       
+	bcmp()
+bcmp() is identical to memcmp(3); use it instead.
+
+	memset()
+The  memset()  function fills the first n bytes of the memory area pointed to by s with the constant byte c.
+
+	memcpy()
+The  memcpy()  function  copies  n bytes from memory area src to memory area dest.
+The memory areas must not overlap.  Use memmove(3) if the memory areas do overlap.	
+	
+	memcmp()
+The  memcmp()  function  compares  the first n bytes (each interpreted as unsigned char) of the memory areas s1 and s2.
+
+inet_aton()
+inet_aton() converts the Internet host address cp from the  IPv4  numbers-and-dots notation  into  binary form (in network byte order) and stores it in the structure that inp points to.  inet_aton() returns nonzero if the address is valid, zero  if not.  The address supplied in cp can have one of the following forms:
+
+- a.b.c.d   Each  of  the  four  numeric  parts specifies a byte of the address; the bytes are assigned in left-to-right order to produce the binary address.
+
+- a.b.c     Parts a and b specify the first two bytes of the binary address.  Part c is interpreted as a 16-bit value that defines the rightmost two bytes of the binary address.  This notation is suitable for specifying (outmoded) Class B network addresses.
+
+- a.b       Part a specifies the first byte of the binary address.  Part b is inter‐preted as a 24-bit value that defines the rightmost three bytes  of  the binary  address.   This  notation  is suitable for specifying (outmoded) Class A network addresses.
+
+- a         The value a is interpreted as a 32-bit value  that  is  stored  directly into the binary address without any byte rearrangement.
+
+In  all  of  the above forms, components of the dotted address can be specified in decimal, octal (with a leading 0), or hexadecimal, with a leading 0X). Addresses in any of these forms are collectively termed IPV4 numbers-and-dots notation.  The form  that uses exactly four decimal numbers is referred to as IPv4 dotted-decimal notation (or sometimes: IPv4 dotted-quad notation).
+
+       inet_aton() returns 1 if the supplied string was successfully interpreted, or 0 if the string is invalid (errno is not set on error).
+       	
+inet_addr()
+The inet_addr() function converts the Internet host address cp from IPv4  numbers-and-dots  notation  into  binary  data in network byte order.  If the input is invalid, INADDR_NONE (usually -1) is returned.  Use of this function is  problematic
+because -1 is a valid address (255.255.255.255). Avoid its use in favor of inet_aton(), inet_pton(3), or getaddrinfo(3), which provide a cleaner way to indicate error return.
+
+inet_ntoa()
+The inet_ntoa() function converts the Internet host address in, given  in  network byte  order,  to a string in IPv4 dotted-decimal notation.  The string is returned in a statically allocated buffer, which subsequent calls will overwrite.
+
+inet_pton() - convert IPv4 and IPv6 addresses from text to binary form
+This function  converts the character string src into a network address structure in the af address family, then copies the network address structure to dst. The af argument must be either AF_INET or AF_INET6. dst is written in network byte order.
+inet_pton()  returns 1 on success (network address was successfully converted). 0 is returned if src does not contain a character string representing a  valid  network  address in the specified address family. If af does not contain a valid address family, -1 is returned and errno is set to EAFNOSUPPORT.
+
+inet_ntop() - convert IPv4 and IPv6 addresses from binary to text form
+This  function converts the network address structure src in the af address family into a character string.  The resulting string is copied to the buffer pointed  to by  dst,  which  must  be  a non-null pointer.  The caller specifies the number of bytes available in this buffer in the argument size.
+
+inet_ntop() extends the inet_ntoa(3) function to support  multiple  address  families,  inet_ntoa(3)  is  now  considered to be deprecated in favor of inet_ntop().
+On  success,  inet_ntop()  returns a non-null pointer to dst.  NULL is returned if there was an error, with errno set to indicate the error.
+
+readn()
+in my linux version, readn is not already, and maybe a read() 
+read()  attempts to read up to count bytes from file descriptor fd into the buffez starting at buf.
+
+On files that support seeking, the read operation commences at  the  file  offset, and  the file offset is incremented by the number of bytes read.  If the file offset is at or past the end of file, no bytes are read, and read() returns zero.
+
+If count is zero, read() may detect the errors described below. In the absence of any errors, or if read() does not check for errors, a read() with a count of 0 returns zero and has no other effects.
+According to POSIX.1, if count is greater than SSIZE_MAX, the result is  implementation-defined; see NOTES for the upper limit on Linux.
+
+On success, the number of bytes read is returned (zero indicates end of file), and the  file  position is advanced by this number.  It is not an error if this number is smaller than the number of bytes requested; this may happen for example because fewer bytes are actually available right now (maybe because we were close to  end-of-file,  or  because  we are reading from a pipe, or from a terminal), or because read() was interrupted by a signal.  See also NOTES.
+
+On error, -1 is returned, and errno is set to indicate the error. In  this  case, it is left unspecified whether the file position (if any) changes.
+
+writen()
+in my linux version, writen() not already, maybe a write()
+write allows you to communicate with other users, by copying lines from your terminal to theirs.
+       
+readline()
+readline  will  read  a  line  from  the terminal and return it, using prompt as a prompt.  If prompt is NULL or the empty string, no prompt is issued.  The line returned is allocated with malloc(3); the caller must free it  when  finished. The
+line returned has the final newline removed, so only the text of the line remains.
+
+readline  offers editing capabilities while the user is entering the line.  By default, the line editing commands are similar to those of emacs. A vi-style  line editing interface is also available.
+
+
+sock_ntop()
+sock_bind_wild()
+sock_cmp_addr()
+sock_cmp_port()
+sock_get_port()
+sock_set_addr()
+sock_set_port()
+sock_set_wild()
+
+sock_bind_wildbinds the wildcard address and an ephemeral port to a socket. sock_cmp_addr compares the address portion of two socket address structures, and sock_cmp_port compares the port number of two socket address structures. sock_get_port returns just the port number, and sock_ntop_host converts just the host portion of a socket address structure to presentation format (not the port number). sock_set_addr sets just the address portion of a socket address structure to the value pointed to by ptr, and sock_set_port sets just the port number of a socket address structure. sock_set_wildsets the address portion of a socket address structure to the wildcard. 

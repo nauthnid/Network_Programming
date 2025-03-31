@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# function to search a webpage for a search string
+search_webpage() {
+    local url="$1"
+    local search_string="$2"
+
+# show the HTML content of webpage
+    local webpage_content
+    webpage_content=$(curl -s "$url")
+
+# search string in webpage content
+    if echo "$webpage_content" | grep -q "$search_string"; then
+        echo  "Found $search_string on the webpage $url"
+    else
+        echo "$search_string not found on the webpage $url"
+    fi
+}
+
+search_webpage "https://www.gnu.org" "Copyright"
+
+# 1. Look up the IP of www.gnu.org using dig
+echo -e "\n1. Using dig: dig www.gnu.org"
+dig www.gnu.org
+
+# 2. Look up the IP of www.gnu.org using host
+echo -e "\n2. Using host: host www.gnu.org\n"
+host www.gnu.org
+
+# 3. Look up the IP of www.gnu.org using nslookup
+echo -e "\n3. Using nslookup: nslookup www.gnu.org\n"
+nslookup www.gnu.org
+
+# 4. Look up the IP using another DNS using dig(with dns 8.8.4.4)
+echo -e "\n4. Using dig with DNS 8.8.4.4: dig @8.8.4.4 www.gnu.org"
+dig @8.8.4.4 www.gnu.org
+
+# 5. Silently look up the IP using another DNS using dig
+echo -e "\n5. Using dig with DNS 8.8.4.4 and make dig print out less information with option +short: dig +short @8.8.4.4 www.gnu.org\n"
+dig +short @8.8.4.4 www.gnu.org 
